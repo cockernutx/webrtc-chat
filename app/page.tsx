@@ -17,8 +17,16 @@ export default function Home() {
 
   useEffect(() => {
     if (peerConnection) {
+      peerConnection.ondatachannel = (channel) => {
+        setDataChannel(channel.channel)
+      }
       peerConnection.onicecandidate = (ice) => {
         setIceCandidate(ice.candidate);
+      }
+      peerConnection.onconnectionstatechange = (state) => {
+        if (peerConnection.iceConnectionState === "connected") {
+          router.push("/chat")
+        }
       }
     }
   }, [peerConnection])
@@ -81,7 +89,7 @@ export default function Home() {
 
   useEffect(() => {
     if (peerIce) {
-      peerConnection.addIceCandidate(peerIce.data.candidate)
+      peerConnection.addIceCandidate(JSON.parse(peerIce.data.candidate))
     }
   }, [peerIce]);
 
@@ -97,14 +105,6 @@ export default function Home() {
       }
     }
   }, [wsError])
-
-  useEffect(() => {
-    if (dataChannel) {
-      dataChannel.onopen = (ev) => {
-        router.push("/chat")
-      }
-    }
-  }, [dataChannel])
 
   const connectToPeer = async () => {
     if (connectionTarget == "") {
