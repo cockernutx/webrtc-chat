@@ -43,9 +43,7 @@ export default function Home() {
     return (
         <>
             {dataChannel != undefined &&
-                <div className=''>
-                    <input type='text' placeholder='message' value={messageToSend} onChange={(v) => { setMessageToSend(v.currentTarget.value) }}></input>
-                    <button onClick={sendMessage}>Send!</button>
+                <div className='bg-biroBlue-600 h-screen'>
                     <ul>
                         {messages.map((value, index) => {
 
@@ -56,6 +54,10 @@ export default function Home() {
                             )
                         })}
                     </ul>
+                    <div>
+                        <input type='text' placeholder='message' value={messageToSend} onChange={(v) => { setMessageToSend(v.currentTarget.value) }}></input>
+                        <button onClick={sendMessage}>Send!</button>
+                    </div>
                 </div>
             }
         </>

@@ -4,14 +4,13 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import "./globals.css"
 import { ChatContext } from './lib/ChatContext';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const context = useContext(ChatContext);
   const [instanceName, setInstanceName] = useState<string>("");
   const [peerName, setPeerName] = useState<string>("");
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | undefined>(undefined);
