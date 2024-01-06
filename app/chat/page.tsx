@@ -3,13 +3,13 @@
 import { useContext, useEffect, useState } from 'react';
 import { ChatContext } from '../lib/ChatContext';
 import Message from '../lib/messages';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const { dataChannel, peerName, instanceName } = useContext(ChatContext);
     const [messages, setMessages] = useState<Message[]>([])
     const [messageToSend, setMessageToSend] = useState<string>("");
-
+    const [messageReceived, setMessageReceived] = useState<Message>();
     const router = useRouter();
 
     useEffect(() => {
@@ -22,7 +22,7 @@ export default function Home() {
                     sender: peerName,
                     content: msg.data
                 }
-                setMessages([...messages, message])
+                setMessageReceived(message)
             }
         }
         else {
@@ -30,24 +30,33 @@ export default function Home() {
         }
     }, [dataChannel]);
 
+    useEffect(() => {
+        if (messageReceived)
+            setMessages([...messages, messageReceived])
+    }, [messageReceived])
+
     const sendMessage = () => {
         dataChannel?.send(messageToSend);
-        setMessages([...messages, {sender: instanceName, content: messageToSend}])
+        setMessages([...messages, { sender: instanceName, content: messageToSend }])
     }
 
     return (
-        <div>
-            <input type='text' placeholder='message' value={messageToSend} onChange={(v) => {setMessageToSend(v.currentTarget.value)}}></input><button onClick={sendMessage}>Send!</button>
-            <ul>
-                {messages.map((value, index) => {
+        <>
+            {dataChannel != undefined &&
+                <div>
+                    <input type='text' placeholder='message' value={messageToSend} onChange={(v) => { setMessageToSend(v.currentTarget.value) }}></input><button onClick={sendMessage}>Send!</button>
+                    <ul>
+                        {messages.map((value, index) => {
 
-                    return (
-                        <li key={index}>
-                            {value.sender}: {value.content}
-                        </li>
-                    )
-                })}
-            </ul>
-        </div>
+                            return (
+                                <li key={index}>
+                                    {value.sender}: {value.content}
+                                </li>
+                            )
+                        })}
+                    </ul>
+                </div>
+            }
+        </>
     )
 }
