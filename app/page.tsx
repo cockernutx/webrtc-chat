@@ -5,13 +5,11 @@ import React, { useEffect, useState } from 'react'
 import SignalingServerManager from './signalingServerManager';
 import { useRouter } from 'next/navigation';
 import { useContext } from 'react';
-import { PeerConnectionContext } from './lib/peerConnectionContext';
+import { ChatContext } from './lib/ChatContext';
 
 export default function Home() {
-  const [connectionTarget, setConnectionTarget] = useState<string>("");
+  const {peerConnection, dataChannel, peerName, setDataChannel, setPeerName, setInstanceName} = useContext(ChatContext);
   const [instanceName, peerOffer, peerAnswer, peerIce, send, wsError] = SignalingServerManager();
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>(new RTCPeerConnection());
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel | undefined>(undefined);
   const [iceCandidate, setIceCandidate] = useState<RTCIceCandidate | null>(null);
   const router = useRouter();
 
@@ -32,11 +30,15 @@ export default function Home() {
   }, [peerConnection])
 
   useEffect(() => {
+    setInstanceName(instanceName);
+  }, [instanceName])
+
+  useEffect(() => {
     if(iceCandidate != null) {
       let candidate = {
         type: "newIceCandidate",
         data: {
-          target: connectionTarget,
+          target: peerName,
           candidate: JSON.stringify(iceCandidate),
           name: instanceName
         }
@@ -56,7 +58,7 @@ export default function Home() {
 
   const sendAnswer = async (data: any) => {
     let target = data.data.name;
-    setConnectionTarget(target);
+    setPeerName(target);
     await peerConnection.setRemoteDescription({
       type: data.type,
       sdp: data.data.sdp
@@ -107,7 +109,7 @@ export default function Home() {
   }, [wsError])
 
   const connectToPeer = async () => {
-    if (connectionTarget == "") {
+    if (peerName == "") {
       alert("Please type the name of the peer!");
       return;
     }
@@ -129,7 +131,7 @@ export default function Home() {
       type: offer.type,
       data: {
         name: instanceName,
-        target: connectionTarget,
+        target: peerName,
         sdp: sdp
       }
     })
@@ -142,13 +144,12 @@ export default function Home() {
   }
 
   return (
-    <PeerConnectionContext.Provider value={{ peerConnection: peerConnection, dataChannel: dataChannel }}>
       <main className="h-screen bg-biroBlue-600">
         <div className='h-screen flex justify-center items-center'>
           <div className=" bg-biroBlue-500 shadow-md rounded p-8">
             <div className='w-max p-2 text-white flex flex-col gap-4'>
               <div className='flex flex-row'>
-                <input className='rounded rounded-r-none p-1 text-black' value={connectionTarget} onChange={(e) => { setConnectionTarget(e.currentTarget.value) }} type="text"></input>
+                <input className='rounded rounded-r-none p-1 text-black' value={peerName} onChange={(e) => { setPeerName(e.currentTarget.value) }} type="text"></input>
                 <button className='bg-blueberry-500 hover:bg-blueberry-600 active:bg-blueberry-700 rounded rounded-l-none text-white p-1 py-2' onClick={connectToPeer}>Connect to peer!</button>
               </div>
               <div className=' bg-rose-100 text-black p-2 rounded flex'>
@@ -163,6 +164,5 @@ export default function Home() {
           </div>
         </div>
       </main>
-    </PeerConnectionContext.Provider>
   )
 }
