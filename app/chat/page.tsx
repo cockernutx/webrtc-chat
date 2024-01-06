@@ -10,7 +10,12 @@ export default function Home() {
     const [messages, setMessages] = useState<Message[]>([])
     const [messageToSend, setMessageToSend] = useState<string>("");
     const [messageReceived, setMessageReceived] = useState<Message>();
+    const [channelClosed, setChannelClosed] = useState<boolean>(false);
     const router = useRouter();
+
+    useEffect(() => {
+
+    }, [channelClosed])
 
     useEffect(() => {
 
@@ -23,6 +28,9 @@ export default function Home() {
                     content: msg.data
                 }
                 setMessageReceived(message)
+            }
+            dataChannel.onclose = () => {
+                setChannelClosed(true);
             }
         }
         else {
@@ -46,7 +54,6 @@ export default function Home() {
                 <div className='bg-biroBlue-600 h-screen'>
                     <ul>
                         {messages.map((value, index) => {
-
                             return (
                                 <li key={index}>
                                     {value.sender}: {value.content}
