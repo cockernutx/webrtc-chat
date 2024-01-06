@@ -15,7 +15,13 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-
+    if (peerOffer) {
+      let data = peerOffer;
+      peerConnection.setRemoteDescription({
+        type: data.type,
+        sdp: data.data.sdp
+      })
+    }
   }, [peerOffer])
 
   useEffect(() => {
@@ -31,6 +37,13 @@ export default function Home() {
     }
   }, [wsError])
 
+  useEffect(() => {
+    if (dataChannel) {
+      dataChannel.onopen = (ev) => {
+        router.push("/chat")
+      }
+    }
+  }, [dataChannel])
 
   const connectToPeer = async () => {
     if (connectionTarget == "") {
@@ -68,7 +81,7 @@ export default function Home() {
   }
 
   return (
-    <PeerConnectionContext.Provider value={{peerConnection: peerConnection, dataChannel: dataChannel}}>
+    <PeerConnectionContext.Provider value={{ peerConnection: peerConnection, dataChannel: dataChannel }}>
       <main className="h-screen bg-biroBlue-600">
         <div className='h-screen flex justify-center items-center'>
           <div className=" bg-biroBlue-500 shadow-md rounded p-8">

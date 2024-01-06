@@ -11,12 +11,12 @@ export interface WebsocketError {
 }
 
 type StringUndefined = string | undefined;
-type ReturnType = [string, StringUndefined, (offer: string) => void, WebsocketError | undefined];
+type ReturnType = [string, any | undefined, (offer: string) => void, WebsocketError | undefined];
 
 export default function SignalingServerManager(): ReturnType {
     const [instanceName, setInstanceName] = useState<string>("");
     const [wsConnection, setWsConnection] = useState<WebSocket>(new WebSocket("ws://127.0.0.1:8081/ws"));
-    const [peerOffer, setPeerOffert] = useState<string | undefined>(undefined); 
+    const [peerOffer, setPeerOffer] = useState<any | undefined>(undefined); 
     const [wsError, setWsError] = useState<WebsocketError>();
 
     const copyInstanceName = () => {
@@ -49,7 +49,7 @@ export default function SignalingServerManager(): ReturnType {
 
                 } break;
                 case "offer": {
-
+                    setPeerOffer(msgObj)
                 } break;
 
             }
