@@ -16,21 +16,26 @@ type ReturnType = [string, AnyUndefined, AnyUndefined, AnyUndefined, (offer: str
 
 export default function SignalingServerManager(): ReturnType {
     const [instanceName, setInstanceName] = useState<string>("");
-    const [wsConnection, setWsConnection] = useState<WebSocket>(new WebSocket("ws://127.0.0.1:8081/ws"));
+    const [wsConnection, setWsConnection] = useState<WebSocket>();
     const [peerOffer, setPeerOffer] = useState<any | undefined>(undefined); 
     const [peerAnswer, setPeerAnswer] = useState<any | undefined>(undefined);
     const [peerIce, setPeerIce] = useState<any | undefined>(undefined);
     const [wsError, setWsError] = useState<WebsocketError>();
+
+    useEffect(() => {
+        setWsConnection(new WebSocket("ws://127.0.0.1:8081/ws"))
+    }, [])
 
     const copyInstanceName = () => {
         navigator.clipboard.writeText(instanceName);
     }
 
     const send = (payload: string) => {
-        wsConnection.send(payload);
+        wsConnection!.send(payload);
     }
 
     useEffect(() => {
+        if(wsConnection) {
 
         wsConnection.onopen = () => {
             console.log("Connected")
@@ -56,6 +61,7 @@ export default function SignalingServerManager(): ReturnType {
                 } break;
 
             }
+        }
         }
     }, [wsConnection])
 

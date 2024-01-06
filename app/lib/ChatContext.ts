@@ -1,7 +1,7 @@
 import { createContext } from "react"
 
 export interface ChatContextValues {
-    peerConnection: RTCPeerConnection,
+    peerConnection: RTCPeerConnection | undefined,
     setPeerConnection: (conn: RTCPeerConnection) => void,
     dataChannel: RTCDataChannel | undefined,
     setDataChannel: (channel: RTCDataChannel) => void,
@@ -12,7 +12,7 @@ export interface ChatContextValues {
 }
 
 const defaultValues: ChatContextValues = {
-    peerConnection: new RTCPeerConnection(),
+    peerConnection: undefined,
     setPeerConnection: (connection) => {},
     dataChannel: undefined,
     setDataChannel: (channel) => {},

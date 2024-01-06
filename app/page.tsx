@@ -8,10 +8,16 @@ import { useContext } from 'react';
 import { ChatContext } from './lib/ChatContext';
 
 export default function Home() {
-  const {peerConnection, dataChannel, peerName, setDataChannel, setPeerName, setInstanceName} = useContext(ChatContext);
+  const {peerConnection, setPeerConnection, dataChannel, peerName, setDataChannel, setPeerName, setInstanceName} = useContext(ChatContext);
   const [instanceName, peerOffer, peerAnswer, peerIce, send, wsError] = SignalingServerManager();
   const [iceCandidate, setIceCandidate] = useState<RTCIceCandidate | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if(peerConnection == undefined) {
+      setPeerConnection(new RTCPeerConnection())
+    }
+  }, [])
 
   useEffect(() => {
     if (peerConnection) {
@@ -59,13 +65,13 @@ export default function Home() {
   const sendAnswer = async (data: any) => {
     let target = data.data.name;
     setPeerName(target);
-    await peerConnection.setRemoteDescription({
+    await peerConnection!.setRemoteDescription({
       type: data.type,
       sdp: data.data.sdp
     });
 
-    let answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(answer)
+    let answer = await peerConnection!.createAnswer();
+    await peerConnection!.setLocalDescription(answer)
 
     let answerWithTarget = JSON.stringify({
       type: answer.type,
@@ -82,7 +88,7 @@ export default function Home() {
 
   useEffect(() => {
     if (peerAnswer) {
-      peerConnection.setRemoteDescription({
+      peerConnection!.setRemoteDescription({
         type: peerAnswer.type,
         sdp: peerAnswer.data.sdp
       });
@@ -91,7 +97,7 @@ export default function Home() {
 
   useEffect(() => {
     if (peerIce) {
-      peerConnection.addIceCandidate(JSON.parse(peerIce.data.candidate))
+      peerConnection!.addIceCandidate(JSON.parse(peerIce.data.candidate))
     }
   }, [peerIce]);
 
@@ -115,15 +121,15 @@ export default function Home() {
     }
 
     const dataChannelParams = { ordered: true };
-    let channel = peerConnection.createDataChannel('messaging-channel', dataChannelParams);
+    let channel = peerConnection!.createDataChannel('messaging-channel', dataChannelParams);
     setDataChannel(channel);
 
     let offerOptions = {
 
     };
-    let offer = await peerConnection.createOffer();
+    let offer = await peerConnection!.createOffer();
 
-    await peerConnection.setLocalDescription(offer);
+    await peerConnection!.setLocalDescription(offer);
 
     let sdp = offer.sdp;
 

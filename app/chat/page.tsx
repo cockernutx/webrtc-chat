@@ -43,8 +43,9 @@ export default function Home() {
     return (
         <>
             {dataChannel != undefined &&
-                <div>
-                    <input type='text' placeholder='message' value={messageToSend} onChange={(v) => { setMessageToSend(v.currentTarget.value) }}></input><button onClick={sendMessage}>Send!</button>
+                <div className=''>
+                    <input type='text' placeholder='message' value={messageToSend} onChange={(v) => { setMessageToSend(v.currentTarget.value) }}></input>
+                    <button onClick={sendMessage}>Send!</button>
                     <ul>
                         {messages.map((value, index) => {
 

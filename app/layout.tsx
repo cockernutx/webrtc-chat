@@ -20,7 +20,7 @@ export default function RootLayout({
   const context = useContext(ChatContext);
   const [instanceName, setInstanceName] = useState<string>("");
   const [peerName, setPeerName] = useState<string>("");
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>(new RTCPeerConnection());
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | undefined>(undefined);
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | undefined>(undefined); 
 
   return (
