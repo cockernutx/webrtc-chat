@@ -12,21 +12,22 @@ export interface WebsocketError {
 
 type StringUndefined = string | undefined;
 type AnyUndefined = any | undefined;
-type ReturnType = [string, AnyUndefined, AnyUndefined, (offer: string) => void, WebsocketError | undefined];
+type ReturnType = [string, AnyUndefined, AnyUndefined, AnyUndefined, (offer: string) => void, WebsocketError | undefined];
 
 export default function SignalingServerManager(): ReturnType {
     const [instanceName, setInstanceName] = useState<string>("");
     const [wsConnection, setWsConnection] = useState<WebSocket>(new WebSocket("ws://127.0.0.1:8081/ws"));
     const [peerOffer, setPeerOffer] = useState<any | undefined>(undefined); 
     const [peerAnswer, setPeerAnswer] = useState<any | undefined>(undefined);
+    const [peerIce, setPeerIce] = useState<any | undefined>(undefined);
     const [wsError, setWsError] = useState<WebsocketError>();
 
     const copyInstanceName = () => {
         navigator.clipboard.writeText(instanceName);
     }
 
-    const sendOffer = (offer: string) => {
-        wsConnection.send(offer);
+    const send = (payload: string) => {
+        wsConnection.send(payload);
     }
 
     useEffect(() => {
@@ -48,7 +49,7 @@ export default function SignalingServerManager(): ReturnType {
                     setWsError(msg.data)
                 } break;
                 case "newIceCandidate": {
-
+                    setPeerIce(msgObj)
                 } break;
                 case "offer": {
                     setPeerOffer(msgObj)
@@ -59,5 +60,5 @@ export default function SignalingServerManager(): ReturnType {
     }, [wsConnection])
 
 
-    return [instanceName, peerOffer, peerAnswer, sendOffer, wsError];
+    return [instanceName, peerOffer, peerAnswer, peerIce, send, wsError];
 }

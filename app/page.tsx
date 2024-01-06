@@ -9,10 +9,34 @@ import { PeerConnectionContext } from './lib/peerConnectionContext';
 
 export default function Home() {
   const [connectionTarget, setConnectionTarget] = useState<string>("");
-  const [instanceName, peerOffer, peerAnswer, sendOffer, wsError] = SignalingServerManager();
+  const [instanceName, peerOffer, peerAnswer, peerIce, send, wsError] = SignalingServerManager();
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>(new RTCPeerConnection());
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | undefined>(undefined);
+  const [iceCandidate, setIceCandidate] = useState<RTCIceCandidate | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (peerConnection) {
+      peerConnection.onicecandidate = (ice) => {
+        setIceCandidate(ice.candidate);
+      }
+    }
+  }, [peerConnection])
+
+  useEffect(() => {
+    if(iceCandidate != null) {
+      let candidate = {
+        type: "newIceCandidate",
+        data: {
+          target: connectionTarget,
+          candidate: JSON.stringify(iceCandidate),
+          name: instanceName
+        }
+      }
+
+      send(JSON.stringify(candidate));
+    }
+  }, [iceCandidate])
 
   useEffect(() => {
     if (peerOffer) {
@@ -24,6 +48,7 @@ export default function Home() {
 
   const sendAnswer = async (data: any) => {
     let target = data.data.name;
+    setConnectionTarget(target);
     await peerConnection.setRemoteDescription({
       type: data.type,
       sdp: data.data.sdp
@@ -39,14 +64,14 @@ export default function Home() {
         target: target,
         sdp: answer.sdp
       }
-  
+
     });
 
-    sendOffer(answerWithTarget);
+    send(answerWithTarget);
   }
 
   useEffect(() => {
-    if(peerAnswer) {
+    if (peerAnswer) {
       peerConnection.setRemoteDescription({
         type: peerAnswer.type,
         sdp: peerAnswer.data.sdp
@@ -55,10 +80,16 @@ export default function Home() {
   }, [peerAnswer]);
 
   useEffect(() => {
+    if (peerIce) {
+      peerConnection.addIceCandidate(peerIce.data.candidate)
+    }
+  }, [peerIce]);
+
+  useEffect(() => {
     if (wsError) {
       switch (wsError.errorType) {
         case "targetNotFound":
-
+          alert("Target not found!")
           break;
 
         default:
@@ -103,7 +134,7 @@ export default function Home() {
       }
     })
 
-    sendOffer(offerWithTarget);
+    send(offerWithTarget);
   }
 
   const copyName = () => {
