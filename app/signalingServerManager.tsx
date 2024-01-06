@@ -11,12 +11,14 @@ export interface WebsocketError {
 }
 
 type StringUndefined = string | undefined;
-type ReturnType = [string, any | undefined, (offer: string) => void, WebsocketError | undefined];
+type AnyUndefined = any | undefined;
+type ReturnType = [string, AnyUndefined, AnyUndefined, (offer: string) => void, WebsocketError | undefined];
 
 export default function SignalingServerManager(): ReturnType {
     const [instanceName, setInstanceName] = useState<string>("");
     const [wsConnection, setWsConnection] = useState<WebSocket>(new WebSocket("ws://127.0.0.1:8081/ws"));
     const [peerOffer, setPeerOffer] = useState<any | undefined>(undefined); 
+    const [peerAnswer, setPeerAnswer] = useState<any | undefined>(undefined);
     const [wsError, setWsError] = useState<WebsocketError>();
 
     const copyInstanceName = () => {
@@ -37,7 +39,7 @@ export default function SignalingServerManager(): ReturnType {
             let msgObj: WebsocketSignal = JSON.parse(msg.data)
             switch (msgObj.type) {
                 case "answer": {
-
+                    setPeerAnswer(msgObj)
                 } break;
                 case "assign": {
                     setInstanceName(msgObj.data.name);
@@ -57,5 +59,5 @@ export default function SignalingServerManager(): ReturnType {
     }, [wsConnection])
 
 
-    return [instanceName, peerOffer, sendOffer, wsError];
+    return [instanceName, peerOffer, peerAnswer, sendOffer, wsError];
 }

@@ -9,7 +9,7 @@ import { PeerConnectionContext } from './lib/peerConnectionContext';
 
 export default function Home() {
   const [connectionTarget, setConnectionTarget] = useState<string>("");
-  const [instanceName, peerOffer, sendOffer, wsError] = SignalingServerManager();
+  const [instanceName, peerOffer, peerAnswer, sendOffer, wsError] = SignalingServerManager();
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>(new RTCPeerConnection());
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | undefined>(undefined);
   const router = useRouter();
@@ -17,12 +17,42 @@ export default function Home() {
   useEffect(() => {
     if (peerOffer) {
       let data = peerOffer;
-      peerConnection.setRemoteDescription({
-        type: data.type,
-        sdp: data.data.sdp
-      })
+
+      sendAnswer(data);
     }
   }, [peerOffer])
+
+  const sendAnswer = async (data: any) => {
+    let target = data.data.name;
+    await peerConnection.setRemoteDescription({
+      type: data.type,
+      sdp: data.data.sdp
+    });
+
+    let answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer)
+
+    let answerWithTarget = JSON.stringify({
+      type: answer.type,
+      data: {
+        name: instanceName,
+        target: target,
+        sdp: answer.sdp
+      }
+  
+    });
+
+    sendOffer(answerWithTarget);
+  }
+
+  useEffect(() => {
+    if(peerAnswer) {
+      peerConnection.setRemoteDescription({
+        type: peerAnswer.type,
+        sdp: peerAnswer.data.sdp
+      });
+    }
+  }, [peerAnswer]);
 
   useEffect(() => {
     if (wsError) {
@@ -99,7 +129,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </main>
